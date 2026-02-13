@@ -20,9 +20,10 @@ export const Home: React.FC = () => {
             );
             setJobId(res.data.job_id);
             setCurrentView('status');
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to start research");
+            const msg = err.response?.data?.detail || err.message || "Failed to start research";
+            alert(`Error: ${JSON.stringify(msg)}`);
         } finally {
             setIsSubmitting(false);
         }

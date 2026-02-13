@@ -42,19 +42,15 @@ export const ResearchStatus: React.FC<ResearchStatusProps> = ({ jobId, onComplet
     }, [jobId, status]);
 
     const steps = [
-        { id: 'clinical_trials', label: 'Clinical Trials Mining', activeStates: ['running', 'generating_report', 'completed'], completedStates: ['generating_report', 'completed'] },
-        { id: 'synthesis', label: 'Evidence Synthesis (LLM)', activeStates: ['running', 'generating_report', 'completed'], completedStates: ['generating_report', 'completed'] },
-        { id: 'report', label: 'Report Generation', activeStates: ['generating_report', 'completed'], completedStates: ['completed'] },
+        { id: 'clinical_trials', label: 'Clinical Trials Mining', activeStates: ['running_clinical_trials'], completedStates: ['running_patents', 'running_market_intelligence', 'running_synthesis', 'generating_report', 'completed'] },
+        { id: 'patents', label: 'Patent Analysis', activeStates: ['running_patents'], completedStates: ['running_market_intelligence', 'running_synthesis', 'generating_report', 'completed'] },
+        { id: 'market', label: 'Market Intelligence', activeStates: ['running_market_intelligence'], completedStates: ['running_synthesis', 'generating_report', 'completed'] },
+        { id: 'synthesis', label: 'Evidence Synthesis (LLM)', activeStates: ['running_synthesis'], completedStates: ['generating_report', 'completed'] },
+        { id: 'report', label: 'Report Generation', activeStates: ['generating_report'], completedStates: ['completed'] },
     ];
 
     const getStepState = (step: typeof steps[0]) => {
-        if (steps.some(s => s.completedStates.includes(status) && s === step)) return 'completed';
-        // Rough heuristic for prototype since backend status is simple
-        // In real app, backend would give granular progress. 
-        // Here we map 3 simple states to 3 generic steps.
-
-        // If status is 'running', we assume we are doing trials or synthesis.
-        // If status is 'generating_report', we are doing report.
+        if (steps.some(s => s.completedStates.includes(status) && s.id === step.id) || step.completedStates.includes(status)) return 'completed';
         if (step.activeStates.includes(status)) return 'active';
         return 'pending';
     };
@@ -72,12 +68,12 @@ export const ResearchStatus: React.FC<ResearchStatusProps> = ({ jobId, onComplet
 
             <h3 className="text-xl font-semibold mb-6 flex items-center space-x-3">
                 <div className={clsx("w-3 h-3 rounded-full", {
-                    'bg-pharma-accent animate-ping': status === 'running' || status === 'generating_report',
+                    'bg-pharma-accent animate-ping': status.startsWith('running') || status === 'generating_report',
                     'bg-pharma-success': status === 'completed',
                     'bg-pharma-error': status === 'failed',
                     'bg-slate-500': status === 'queued'
                 })}></div>
-                <span>Research Status: <span className="text-pharma-accent capitalize">{status.replace('_', ' ')}</span></span>
+                <span>Research Status: <span className="text-pharma-accent capitalize">{status.replace(/_/g, ' ').replace('running ', '')}</span></span>
             </h3>
 
             <div className="space-y-6 relative">
