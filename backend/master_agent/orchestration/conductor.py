@@ -40,7 +40,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
     job_uuid = uuid.UUID(job_id_str)
     
     # 1. Update Status
-    _update_job_status(job_uuid, "running")
+    _update_job_status(job_uuid, "running_clinical_trials")
 
     try:
         # 2. Run Clinical Trials Worker
@@ -55,6 +55,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
         print(f"[Conductor] Clinical Trials Found: {len(ct_outputs.trials)}")
 
         # 3. NEW: Run Patent Worker
+        _update_job_status(job_uuid, "running_patents")
         print("[Conductor] Running Patent Worker...")
         pat_task_id = str(uuid6.uuid7())
         pat_result_raw = run_patent_worker(
@@ -66,6 +67,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
         print(f"[Conductor] Patents Found: {len(pat_outputs.patents)}")
 
         # 4. Run Market Intelligence Worker
+        _update_job_status(job_uuid, "running_market_intelligence")
         print("[Conductor] Running Market Intelligence Worker...")
         market_task_id = str(uuid6.uuid7())
         market_result_raw = run_market_worker(
@@ -76,6 +78,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
         market_outputs = MarketIntelligenceOutputs.model_validate(market_result_raw["outputs"])
 
         # 5. Run Synthesis (LLM)
+        _update_job_status(job_uuid, "running_synthesis")
         print("[Conductor] Running Synthesis Engine...")
         canonical_result: CanonicalResult = run_synthesis(
             job_id=job_uuid,
