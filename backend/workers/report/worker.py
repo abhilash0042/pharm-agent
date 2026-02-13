@@ -2,6 +2,8 @@ import uuid
 import uuid6
 from datetime import datetime, UTC
 from pathlib import Path
+import tempfile
+import os
 
 from celery import shared_task
 from reportlab.lib.pagesizes import letter
@@ -323,8 +325,9 @@ def run_report_worker(job_id: str, task_id: str, params: dict):
     pdf_name = f"{job_id}_report.pdf"
     ppt_name = f"{job_id}_slides.pptx"
 
-    pdf_path = Path(f"/tmp/{pdf_name}")
-    ppt_path = Path(f"/tmp/{ppt_name}")
+    temp_dir = tempfile.gettempdir()
+    pdf_path = Path(temp_dir) / pdf_name
+    ppt_path = Path(temp_dir) / ppt_name
 
     generate_pdf(pdf_path, result)
     generate_ppt(ppt_path, result)
