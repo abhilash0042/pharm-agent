@@ -13,13 +13,13 @@ export default defineConfig({
       }
     }
   },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'framer-motion', 'axios'],
-        },
-      },
+  resolve: {
+    alias: {
+      '@': '/src',
     },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
   }
 })

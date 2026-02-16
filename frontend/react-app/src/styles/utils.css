@@ -1,0 +1,39 @@
+/* Basic reset and utility classes */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    font-weight: 600;
+    color: var(--color-text-main);
+    letter-spacing: -0.02em;
+}
+
+p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.mono-text {
+    font-family: var(--font-mono);
+}
+
+.glass-panel {
+    background: rgba(24, 24, 31, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--color-border);
+}
