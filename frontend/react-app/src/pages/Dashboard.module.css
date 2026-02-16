@@ -1,0 +1,40 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-md);
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sectionTitle {
+    font-size: 1.1rem;
+    color: var(--color-text-main);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.sectionTitle::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 16px;
+    background-color: var(--color-accent);
+    border-radius: 2px;
+}
