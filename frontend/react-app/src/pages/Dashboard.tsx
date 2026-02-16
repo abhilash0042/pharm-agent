@@ -1,6 +1,7 @@
 import React from 'react';
 import { Activity, Brain, Database, Server } from 'lucide-react';
 import { StatsCard } from '../components/dashboard/StatsCard';
+import { ActivityLog } from '../components/dashboard/ActivityLog';
 import styles from './Dashboard.module.css';
 
 const Dashboard: React.FC = () => {
@@ -43,9 +44,7 @@ const Dashboard: React.FC = () => {
                 <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>Recent Research Activity</h2>
                 </div>
-                <div style={{ padding: 'var(--space-lg)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', color: 'var(--color-text-dim)', textAlign: 'center' }}>
-                    Activity Log Component Placeholder
-                </div>
+                <ActivityLog />
             </div>
         </div>
     );
