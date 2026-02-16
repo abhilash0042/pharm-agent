@@ -1,7 +1,8 @@
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
+import Agents from './pages/Agents';
 
 // Lazy load other pages
 const PlaceholderPage = ({ title }: { title: string }) => (
@@ -17,7 +18,7 @@ function App() {
             <Suspense fallback={<div>Loading...</div>}>
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="/agents" element={<PlaceholderPage title="Active Agents" />} />
+                    <Route path="/agents" element={<Agents />} />
                     <Route path="/research" element={<PlaceholderPage title="Research Tasks" />} />
                     <Route path="/knowledge" element={<PlaceholderPage title="Knowledge Base" />} />
                     <Route path="/logs" element={<PlaceholderPage title="System Logs" />} />
