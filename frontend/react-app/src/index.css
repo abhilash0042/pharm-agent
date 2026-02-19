@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+    --color-pharma-dark: #0f172a;
+    --color-pharma-card: #1e293b;
+    --color-pharma-accent: #06b6d4;
+    --color-pharma-success: #10b981;
+    --color-pharma-warning: #f59e0b;
+    --color-pharma-error: #ef4444;
+
+    --font-sans: 'Inter', 'sans-serif';
+}
+
+body {
+    @apply bg-pharma-dark text-white font-sans;
+}

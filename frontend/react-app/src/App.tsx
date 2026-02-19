@@ -1,33 +1,9 @@
-import { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from './components/layout/Layout';
-import Dashboard from './pages/Dashboard';
-import Agents from './pages/Agents';
-
-// Lazy load other pages
-const PlaceholderPage = ({ title }: { title: string }) => (
-    <div style={{ padding: 'var(--space-lg)', color: 'var(--color-text-muted)' }}>
-        <h2>{title}</h2>
-        <p>Module initializing...</p>
-    </div>
-);
+import { Home } from './pages/Home'
 
 function App() {
-    return (
-        <Layout>
-            <Suspense fallback={<div>Loading...</div>}>
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/agents" element={<Agents />} />
-                    <Route path="/research" element={<PlaceholderPage title="Research Tasks" />} />
-                    <Route path="/knowledge" element={<PlaceholderPage title="Knowledge Base" />} />
-                    <Route path="/logs" element={<PlaceholderPage title="System Logs" />} />
-                    <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Suspense>
-        </Layout>
-    );
+  return (
+    <Home />
+  )
 }
 
-export default App;
+export default App
