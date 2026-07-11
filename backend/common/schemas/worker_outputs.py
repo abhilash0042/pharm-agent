@@ -5,10 +5,10 @@ from .canonical_result import TrialRecord
 
 class ClinicalTrialsOutputs(BaseModel):
     trials: List[TrialRecord]
-    summary_text: str
-    research_confidence: float
-    key_findings: List[str]
-    suggested_follow_up: List[str]
+    summary_text: str = ""
+    research_confidence: float = 0.8
+    key_findings: List[str] = []
+    suggested_follow_up: List[str] = []
 
 class ReportWorkerOutputs(BaseModel):
     pdf_uri: str
