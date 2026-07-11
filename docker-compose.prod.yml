@@ -1,0 +1,79 @@
+services:
+  # --------------------------------
+  # Infrastructure
+  # --------------------------------
+  redis:
+    image: redis:7
+    container_name: pharma_redis_prod
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./volumes/redis:/data
+
+  postgres:
+    image: postgres:14
+    container_name: pharma_postgres_prod
+    environment:
+      POSTGRES_USER: pharma
+      POSTGRES_PASSWORD: pharma
+      POSTGRES_DB: pharma
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./volumes/postgres:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    container_name: pharma_minio_prod
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - ./volumes/minio:/data
+
+  # --------------------------------
+  # Application Services
+  # --------------------------------
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pharma_api_prod
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://pharma:pharma@postgres:5432/pharma
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio123
+      - MINIO_USE_HTTPS=false
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - API_KEY=supersecret
+    depends_on:
+      - postgres
+      - redis
+      - minio
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pharma_worker_prod
+    command: celery -A backend.celery_app worker --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://pharma:pharma@postgres:5432/pharma
+      - REDIS_URL=redis://redis:6379/0
+      - MINIO_ENDPOINT=minio:9000
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio123
+      - MINIO_USE_HTTPS=false
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+      - minio
