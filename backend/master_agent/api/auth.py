@@ -6,7 +6,12 @@ import os
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+    raise RuntimeError("Missing required environment variable: API_KEY")
+
 WORKER_TOKEN = os.getenv("WORKER_TOKEN")
+if not WORKER_TOKEN:
+    raise RuntimeError("Missing required environment variable: WORKER_TOKEN")
 
 async def verify_api_key(request: Request):
     """

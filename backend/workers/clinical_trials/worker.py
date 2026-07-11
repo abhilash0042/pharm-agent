@@ -26,7 +26,9 @@ def run_clinical_trials_worker(job_id: str, task_id: str, params: dict):
     # For this transition from mock to industry-grade, we use LLM-driven discovery.
     prompt = (
         f"Discover and list actual or highly representative clinical trials for the molecule '{molecule}'.\n"
-        "Provide a list of trials including NCT IDs (if known), phases, statuses, and conditions."
+        "Provide a list of trials including NCT IDs (if known), phases, statuses, and conditions.\n"
+        "Also provide a 'summary_text' of the trials landscape, a 'research_confidence' score (0.0 to 1.0), "
+        "a list of 'key_findings' strings, and a list of 'suggested_follow_up' items."
     )
     
     outputs = llm_structured(

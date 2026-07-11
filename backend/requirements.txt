@@ -63,3 +63,4 @@ orjson>=3.9.10
 duckduckgo-search==7.2.1
 matplotlib
 seaborn
+pytest

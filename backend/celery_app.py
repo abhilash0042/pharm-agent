@@ -12,7 +12,9 @@ celery_app = Celery(
     include=[
         "backend.master_agent.orchestration.conductor",
         "backend.workers.clinical_trials.worker",
-        "backend.workers.report.worker"
+        "backend.workers.report.worker",
+        "backend.workers.patent_worker.worker",
+        "backend.workers.market_worker.worker"
     ]
 )
 

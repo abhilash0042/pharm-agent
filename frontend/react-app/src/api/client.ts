@@ -10,7 +10,7 @@ export const apiClient = axios.create({
     // This avoids CORS and Network Errors.
     headers: {
         'Content-Type': 'application/json',
-        'X-API-KEY': 'supersecret' // Hardcoded for prototype
+        'X-API-KEY': import.meta.env.VITE_API_KEY || ''
     }
 });
 

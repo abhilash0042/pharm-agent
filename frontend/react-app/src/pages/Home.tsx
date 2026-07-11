@@ -16,7 +16,7 @@ export const Home: React.FC = () => {
         try {
             const res = await axios.post('/api/research',
                 { molecule, prompt },
-                { headers: { 'X-API-KEY': 'supersecret' } }
+                { headers: { 'X-API-KEY': import.meta.env.VITE_API_KEY || '' } }
             );
             setJobId(res.data.job_id);
             setCurrentView('status');
