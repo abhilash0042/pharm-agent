@@ -12,8 +12,8 @@ from backend.common.llm.inference import llm_structured
 # Industry-grade logging setup
 logger = logging.getLogger(__name__)
 
-@shared_task(name="workers.market_worker.worker.run", bind=True)
-def run_market_worker(self, job_id: str, task_id: str, params: dict):
+@shared_task(name="workers.market_worker.worker.run")
+def run_market_worker(job_id: str, task_id: str, params: dict):
     """
     Market & Competitor Intelligence Worker.
     Refactored for robustness and observability.
@@ -77,7 +77,7 @@ def run_market_worker(self, job_id: str, task_id: str, params: dict):
             ],
             metadata={
                 "total_latency_ms": total_latency_ms,
-                "celery_task_id": self.request.id if hasattr(self, 'request') else None
+                "celery_task_id": None
             },
             notes=f"Successfully synthesized market data for {molecule}."
         )

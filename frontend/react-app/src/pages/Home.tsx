@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '../api/client';
 import { NewResearch } from '../components/NewResearch';
 import { ResearchStatus } from '../components/ResearchStatus';
 import { ReportView } from '../components/ReportView';
@@ -14,9 +14,8 @@ export const Home: React.FC = () => {
     const handleResearchSubmit = async (molecule: string, prompt: string) => {
         setIsSubmitting(true);
         try {
-            const res = await axios.post('/api/research',
-                { molecule, prompt },
-                { headers: { 'X-API-KEY': import.meta.env.VITE_API_KEY || '' } }
+            const res = await apiClient.post('/api/research',
+                { molecule, prompt }
             );
             setJobId(res.data.job_id);
             setCurrentView('status');

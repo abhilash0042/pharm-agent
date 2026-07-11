@@ -5,10 +5,15 @@ import os
 
 load_dotenv()
 
+# Read Redis URL from environment; fall back to local Docker for dev
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6380/0")
+# Use a separate DB index for the result backend
+REDIS_BACKEND = REDIS_URL.rstrip("/0123456789") + "/1" if REDIS_URL else "redis://127.0.0.1:6380/1"
+
 celery_app = Celery(
     "pharm_agent",
-    broker="redis://127.0.0.1:6380/0",
-    backend="redis://127.0.0.1:6380/1",
+    broker=REDIS_URL,
+    backend=REDIS_BACKEND,
     include=[
         "backend.master_agent.orchestration.conductor",
         "backend.workers.clinical_trials.worker",

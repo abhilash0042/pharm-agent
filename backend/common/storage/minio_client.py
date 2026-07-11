@@ -12,17 +12,21 @@ def _required(key: str) -> str:
     return value
 
 # configuration (static)
-MINIO_ENDPOINT = _required("MINIO_ENDPOINT")
-MINIO_ACCESS_KEY = _required("MINIO_ACCESS_KEY")
-MINIO_SECRET_KEY = _required("MINIO_SECRET_KEY")
+MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
+MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY")
+MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 MINIO_SECURE = os.getenv("MINIO_USE_HTTPS", "false").lower() == "true"
 
-minio_client = Minio(
-    MINIO_ENDPOINT,
-    access_key= MINIO_ACCESS_KEY,
-    secret_key= MINIO_SECRET_KEY,
-    secure= MINIO_SECURE
-)
+if MINIO_ENDPOINT and MINIO_ACCESS_KEY and MINIO_SECRET_KEY:
+    minio_client = Minio(
+        MINIO_ENDPOINT,
+        access_key= MINIO_ACCESS_KEY,
+        secret_key= MINIO_SECRET_KEY,
+        secure= MINIO_SECURE
+    )
+else:
+    minio_client = None
+    print("[MinIO] WARNING: Storage credentials missing. File uploads will be disabled and fall back to local disk.")
 
 # buckets
 REQUIRED_BUCKETS = [
@@ -32,6 +36,9 @@ REQUIRED_BUCKETS = [
 
 # bucket initialization
 def initialize_buckets() -> None:
+    if minio_client is None:
+        print("[MinIO] Storage client not initialized. Skipping bucket creation.")
+        return
     # ensure all buckets exist. safe to run multiple times.
     for bucket in REQUIRED_BUCKETS:
         try:
@@ -46,6 +53,8 @@ def initialize_buckets() -> None:
 
 # file upload helper
 def upload_file(bucket: str, object_name: str, file_path: str) -> dict:
+    if minio_client is None:
+        raise RuntimeError("MinIO client is not initialized.")
     # upload local file to minio. return dict suitable for inserting into artifacts table.
     if not bucket in REQUIRED_BUCKETS:
         raise ValueError(f"Bucket '{bucket}' is not recognized. Must be one of : {REQUIRED_BUCKETS}")
@@ -69,6 +78,8 @@ def upload_file(bucket: str, object_name: str, file_path: str) -> dict:
 
 # pre signed url for downloads
 def presigned_url(bucket: str, object_name: str, expires: int = 3600) -> str:
+    if minio_client is None:
+        raise RuntimeError("MinIO client is not initialized.")
     # return signed temp url for downloading files.
     try:
         return minio_client.presigned_get_object(

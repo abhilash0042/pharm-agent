@@ -381,4 +381,4 @@ def run_report_worker(job_id: str, task_id: str, params: dict):
         notes=None
     )
 
-    return envelope.model_dump()
+    return envelope.model_dump(mode='json')

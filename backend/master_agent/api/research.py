@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, ORJSONResponse
 import uuid6
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from .auth import verify_api_key
 from backend.database import SessionLocal
@@ -27,9 +31,8 @@ async def create_research_job(
     request: ResearchRequest,
     db: Session = Depends(get_db)
 ):
-    import traceback
     try:
-        print(f"Creating job for {request.molecule}...")
+        logger.info(f"Creating job for {request.molecule}...")
         job = Job(
             id=uuid6.uuid7(),
             prompt_original=request.prompt,
@@ -43,18 +46,15 @@ async def create_research_job(
         db.refresh(job)
 
         # Trigger workflow
-        print(f"Triggering workflow for {job.id}...")
-        print(f"DEBUG: Celery Broker URL: {run_research_workflow.app.conf.broker_url}")
+        logger.info(f"Triggering workflow for {job.id}")
         run_research_workflow.delay(str(job.id), request.molecule)
-        print("Workflow triggered.")
 
         return {"job_id": str(job.id)}
     except Exception as e:
-        print(f"ERROR: {e}")
-        traceback.print_exc()
+        logger.exception(f"Failed to create research job: {e}")
         return ORJSONResponse(
             status_code=500,
-            content={"error": str(e), "traceback": traceback.format_exc()}
+            content={"error": "Failed to create research job. Please try again."}
         )
 
 @router.get("/api/research/{job_id}/status", dependencies=[Depends(verify_api_key)])
@@ -89,7 +89,13 @@ from fastapi.responses import StreamingResponse
 from backend.common.storage.minio_client import minio_client
 
 @router.get("/api/research/{job_id}/download/{file_type}")
-async def download_artifact(job_id: str, file_type: str):
+async def download_artifact(job_id: str, file_type: str, api_key: str | None = None, request: Request = None):
+    # Support auth via query param (?api_key=) for browser direct downloads,
+    # or via X-API-Key header for programmatic access
+    from .auth import API_KEY
+    header_key = request.headers.get("X-API-Key") if request else None
+    if api_key != API_KEY and header_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API key")
     if file_type not in ["pdf", "ppt"]:
         raise HTTPException(status_code=400, detail="Invalid file type. Use 'pdf' or 'ppt'.")
 

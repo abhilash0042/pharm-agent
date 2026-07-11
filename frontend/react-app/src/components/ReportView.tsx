@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '../api/client';
 import { ArrowDownTrayIcon, BeakerIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -13,9 +13,7 @@ export const ReportView: React.FC<ReportViewProps> = ({ jobId }) => {
 
     useEffect(() => {
         const poll = setInterval(() => {
-            axios.get(`/api/research/${jobId}/status`, {
-                headers: { 'X-API-KEY': 'supersecret' }
-            })
+            apiClient.get(`/api/research/${jobId}/status`)
                 .then(res => {
                     if (res.data.status === 'completed') {
                         setData(res.data.canonical_result);
@@ -32,7 +30,8 @@ export const ReportView: React.FC<ReportViewProps> = ({ jobId }) => {
     }, [jobId]);
 
     const handleDownload = (type: 'pdf' | 'ppt') => {
-        window.open(`/api/research/${jobId}/download/${type}`, '_blank');
+        const baseUrl = import.meta.env.VITE_API_URL || '';
+        window.open(`${baseUrl}/api/research/${jobId}/download/${type}?api_key=${import.meta.env.VITE_API_KEY || ''}`, '_blank');
     };
 
     if (loading) return (

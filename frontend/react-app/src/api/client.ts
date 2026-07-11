@@ -4,10 +4,10 @@ import axios from 'axios';
 // For now, assuming standard localhost:8000
 // const API_BASE_URL = 'http://127.0.0.1:8000';
 
+// Uses VITE_API_URL from environment variables for production (e.g. Render/Vercel)
+// Falls back to empty string for local dev relying on Vite Proxy
 export const apiClient = axios.create({
-    // baseURL: API_BASE_URL, 
-    // We use RELATIVE paths so Vite Proxy handles the forwarding to 127.0.0.1:8000.
-    // This avoids CORS and Network Errors.
+    baseURL: import.meta.env.VITE_API_URL || '',
     headers: {
         'Content-Type': 'application/json',
         'X-API-KEY': import.meta.env.VITE_API_KEY || ''

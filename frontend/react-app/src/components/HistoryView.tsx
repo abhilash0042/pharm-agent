@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '../api/client';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 interface Job {
@@ -20,9 +20,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ onSelectJob }) => {
     useEffect(() => {
         // Fetch history
         // Uses the new endpoint we just added
-        axios.get('/api/jobs', {
-            headers: { 'X-API-KEY': 'supersecret' }
-        })
+        apiClient.get('/api/jobs')
             .then(res => {
                 setJobs(res.data);
                 setLoading(false);

@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import time
@@ -12,17 +13,32 @@ from pydantic import BaseModel, ValidationError
 from backend.database import SessionLocal
 from backend.master_agent.models.llm_call import LLMCall
 
+logger = logging.getLogger(__name__)
+
 class LLMResponseFormatError(Exception): pass
 class LLMServiceError(Exception): pass
 
-ollama_base = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+# ── LLM Provider Configuration ──────────────────────────────────────
+# Priority: OPENROUTER_API_KEY (cloud) → OLLAMA_BASE_URL (local dev)
+_openrouter_key = os.getenv("OPENROUTER_API_KEY")
+_ollama_base = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
 
-# Use local Ollama — free, no rate limits, no credits
-client = OpenAI(
-    base_url=ollama_base,
-    api_key="ollama",
-)
-MODEL_NAME = os.getenv("LLM_MODEL", "llama3.2")
+if _openrouter_key:
+    # Production: use OpenRouter (supports GPT-4o-mini, Claude, Llama, etc.)
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=_openrouter_key,
+    )
+    MODEL_NAME = os.getenv("LLM_MODEL", "openai/gpt-4o-mini")
+    logger.info(f"LLM Provider: OpenRouter ({MODEL_NAME})")
+else:
+    # Local development: use Ollama
+    client = OpenAI(
+        base_url=_ollama_base,
+        api_key="ollama",
+    )
+    MODEL_NAME = os.getenv("LLM_MODEL", "llama3.2")
+    logger.info(f"LLM Provider: Ollama ({MODEL_NAME})")
 
 # generic type for schema
 T = TypeVar("T", bound=BaseModel)

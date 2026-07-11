@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircleIcon, ClockIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { researchApi } from '../api/client';
@@ -12,7 +12,12 @@ interface ResearchStatusProps {
 
 export const ResearchStatus: React.FC<ResearchStatusProps> = ({ jobId, onComplete }) => {
     const [status, setStatus] = useState<string>('queued');
-    // const [error, setError] = useState<string | null>(null);
+    const statusRef = useRef(status);
+
+    // Keep ref in sync with state
+    useEffect(() => {
+        statusRef.current = status;
+    }, [status]);
 
     // Polling Logic
     useEffect(() => {
@@ -29,17 +34,17 @@ export const ResearchStatus: React.FC<ResearchStatusProps> = ({ jobId, onComplet
                 }
             } catch (err) {
                 console.error("Polling error", err);
-                // if (isMounted) setError("Failed to fetch status");
             }
 
-            if (isMounted && status !== 'completed' && status !== 'failed') {
+            // Use ref to check latest status (avoids stale closure)
+            if (isMounted && statusRef.current !== 'completed' && statusRef.current !== 'failed') {
                 setTimeout(poll, 2000); // Poll every 2s
             }
         };
 
         poll();
         return () => { isMounted = false; };
-    }, [jobId, status]);
+    }, [jobId]);
 
     const steps = [
         { id: 'clinical_trials', label: 'Clinical Trials Mining', activeStates: ['running_clinical_trials'], completedStates: ['running_patents', 'running_market_intelligence', 'running_synthesis', 'generating_report', 'completed'] },

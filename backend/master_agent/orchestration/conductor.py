@@ -1,3 +1,5 @@
+import logging
+
 from backend.celery_app import celery_app
 import uuid
 import uuid6
@@ -15,6 +17,8 @@ from backend.master_agent.synthesis.engine import run_synthesis
 
 from backend.common.schemas.worker_outputs import ClinicalTrialsOutputs, MarketIntelligenceOutputs
 from backend.common.schemas.canonical_result import CanonicalResult, PatentOutputs
+
+logger = logging.getLogger(__name__)
 
 def _update_job_status(job_id: uuid.UUID, status: str, result: dict | None = None):
     db: Session = SessionLocal()
@@ -36,7 +40,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
     The Main Conductor.
     Executes the Prototype Flow: Clinical -> Patent -> Market -> Synthesis -> Report
     """
-    print(f"[Conductor] Starting Job {job_id_str} for {molecule}")
+    logger.info(f"[Conductor] Starting Job {job_id_str} for {molecule}")
     job_uuid = uuid.UUID(job_id_str)
     
     # 1. Update Status
@@ -44,7 +48,7 @@ def run_research_workflow(job_id_str: str, molecule: str):
 
     try:
         # 2. Run Clinical Trials Worker
-        print("[Conductor] Running Clinical Trials Worker...")
+        logger.info("[Conductor] Running Clinical Trials Worker...")
         ct_task_id = str(uuid6.uuid7())
         ct_result_raw = run_clinical_trials_worker(
             job_id=job_id_str,
@@ -52,11 +56,11 @@ def run_research_workflow(job_id_str: str, molecule: str):
             params={"molecule": molecule}
         )
         ct_outputs = ClinicalTrialsOutputs.model_validate(ct_result_raw["outputs"])
-        print(f"[Conductor] Clinical Trials Found: {len(ct_outputs.trials)}")
+        logger.info(f"[Conductor] Clinical Trials Found: {len(ct_outputs.trials)}")
 
-        # 3. NEW: Run Patent Worker
+        # 3. Run Patent Worker
         _update_job_status(job_uuid, "running_patents")
-        print("[Conductor] Running Patent Worker...")
+        logger.info("[Conductor] Running Patent Worker...")
         pat_task_id = str(uuid6.uuid7())
         pat_result_raw = run_patent_worker(
             job_id=job_id_str,
@@ -64,11 +68,11 @@ def run_research_workflow(job_id_str: str, molecule: str):
             params={"molecule": molecule}
         )
         pat_outputs = PatentOutputs.model_validate(pat_result_raw["outputs"])
-        print(f"[Conductor] Patents Found: {len(pat_outputs.patents)}")
+        logger.info(f"[Conductor] Patents Found: {len(pat_outputs.patents)}")
 
         # 4. Run Market Intelligence Worker
         _update_job_status(job_uuid, "running_market_intelligence")
-        print("[Conductor] Running Market Intelligence Worker...")
+        logger.info("[Conductor] Running Market Intelligence Worker...")
         market_task_id = str(uuid6.uuid7())
         market_result_raw = run_market_worker(
             job_id=job_id_str,
@@ -79,34 +83,35 @@ def run_research_workflow(job_id_str: str, molecule: str):
 
         # 5. Run Synthesis (LLM)
         _update_job_status(job_uuid, "running_synthesis")
-        print("[Conductor] Running Synthesis Engine...")
+        logger.info("[Conductor] Running Synthesis Engine...")
         canonical_result: CanonicalResult = run_synthesis(
             job_id=job_uuid,
             molecule=molecule,
             ct_outputs=ct_outputs,
-            pat_outputs=pat_outputs, # Pass Patent Data
+            pat_outputs=pat_outputs,
             market_outputs=market_outputs
         )
-        print(f"[Conductor] Synthesis Complete. Confidence: {canonical_result.confidence_overall}")
+        logger.info(f"[Conductor] Synthesis Complete. Confidence: {canonical_result.confidence_overall}")
 
         # 6. Save Synthesis Result to DB
         _update_job_status(job_uuid, "generating_report", result=canonical_result.model_dump())
 
         # 7. Run Report Worker
-        print("[Conductor] Generating PDF/PPT artifacts...")
+        logger.info("[Conductor] Generating PDF/PPT artifacts...")
         rep_task_id = str(uuid6.uuid7())
         rep_result_raw = run_report_worker(
             job_id=job_id_str,
             task_id=rep_task_id,
             params={"canonical_result": canonical_result.model_dump()}
         )
-        print("[Conductor] Report Generation Complete.")
+        logger.info("[Conductor] Report Generation Complete.")
 
         # 8. Final Completion
         _update_job_status(job_uuid, "completed")
-        print(f"[Conductor] Job {job_id_str} Finished Successfully.")
+        logger.info(f"[Conductor] Job {job_id_str} Finished Successfully.")
 
     except Exception as e:
-        print(f"[Conductor] Job Failed: {e}")
+        logger.exception(f"[Conductor] Job Failed: {e}")
         _update_job_status(job_uuid, "failed")
         raise e
+
