@@ -332,22 +332,33 @@ def run_report_worker(job_id: str, task_id: str, params: dict):
     generate_pdf(pdf_path, result)
     generate_ppt(ppt_path, result)
 
-    # 3. upload to minio
-    pdf_upload = upload_file(
-        bucket="artifacts",
-        object_name=f"{job_id}_report.pdf",
-        file_path=str(pdf_path)
-    )
-    ppt_upload = upload_file(
-        bucket="artifacts",
-        object_name=f"{job_id}_slides.pptx",
-        file_path=str(ppt_path)
-    )
+    # 3. Upload to MinIO — gracefully fall back to local paths if storage is full
+    try:
+        pdf_upload = upload_file(
+            bucket="artifacts",
+            object_name=f"{job_id}_report.pdf",
+            file_path=str(pdf_path)
+        )
+        pdf_uri = pdf_upload["uri"]
+    except Exception as e:
+        print(f"[ReportWorker] WARNING: MinIO upload failed for PDF ({e}). Using local path.")
+        pdf_uri = str(pdf_path)
+
+    try:
+        ppt_upload = upload_file(
+            bucket="artifacts",
+            object_name=f"{job_id}_slides.pptx",
+            file_path=str(ppt_path)
+        )
+        ppt_uri = ppt_upload["uri"]
+    except Exception as e:
+        print(f"[ReportWorker] WARNING: MinIO upload failed for PPT ({e}). Using local path.")
+        ppt_uri = str(ppt_path)
 
     # 4. worker output schema
     outputs = ReportWorkerOutputs(
-        pdf_uri=pdf_upload["uri"],
-        ppt_uri=ppt_upload["uri"]
+        pdf_uri=pdf_uri,
+        ppt_uri=ppt_uri
     )
 
     # 5. return workerenvelope
@@ -363,7 +374,7 @@ def run_report_worker(job_id: str, task_id: str, params: dict):
             WorkerSource(
                 type="generated",
                 title="Report Worker Generated Files",
-                uri= "minio://artifacts/",
+                uri=pdf_uri,
                 retrieved_at=datetime.now(UTC)
             )
         ],
