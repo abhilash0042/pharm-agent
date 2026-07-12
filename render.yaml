@@ -25,18 +25,9 @@ services:
     name: pharm-agent-api
     env: docker
     dockerfilePath: ./backend/Dockerfile
+    dockerCommand: sh -c "celery -A backend.celery_app worker --loglevel=info & exec gunicorn backend.master_agent.api.main:app -w 2 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120"
     repo: https://github.com/abhilash0042/pharm-agent
     plan: free
     healthCheckPath: /health
-    envVars:
-      - fromGroup: pharm-agent-shared
-
-  - type: worker
-    name: pharm-agent-worker
-    env: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerCommand: celery -A backend.celery_app worker --loglevel=info
-    repo: https://github.com/abhilash0042/pharm-agent
-    plan: free
     envVars:
       - fromGroup: pharm-agent-shared
