@@ -28,8 +28,8 @@ services:
     repo: https://github.com/abhilash0042/pharm-agent
     plan: free
     healthCheckPath: /health
-    envVarGroups:
-      - name: pharm-agent-shared
+    envVars:
+      - fromGroup: pharm-agent-shared
 
   - type: worker
     name: pharm-agent-worker
@@ -38,5 +38,5 @@ services:
     dockerCommand: celery -A backend.celery_app worker --loglevel=info
     repo: https://github.com/abhilash0042/pharm-agent
     plan: free
-    envVarGroups:
-      - name: pharm-agent-shared
+    envVars:
+      - fromGroup: pharm-agent-shared
