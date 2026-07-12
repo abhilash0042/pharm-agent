@@ -65,7 +65,4 @@ services:
           name: pharm-agent-api
           envVarKey: OPENROUTER_API_KEY
       - key: WORKER_TOKEN
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: WORKER_TOKEN
+        value: workertoken
