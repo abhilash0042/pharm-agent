@@ -20,10 +20,9 @@ COPY backend /app/backend/
 # Expose API port
 EXPOSE 8000
 
-# Default command runs the API via gunicorn for production stability
-CMD ["gunicorn", "backend.master_agent.api.main:app", \
-     "-w", "2", \
-     "-k", "uvicorn.workers.UvicornWorker", \
-     "--bind", "0.0.0.0:8000", \
-     "--timeout", "120", \
-     "--graceful-timeout", "30"]
+# Copy and make the startup script executable
+COPY backend/start.sh /app/backend/start.sh
+RUN chmod +x /app/backend/start.sh
+
+# Default command runs both Celery and FastAPI
+CMD ["/app/backend/start.sh"]
