@@ -3,7 +3,7 @@ services:
     name: pharm-agent-api
     env: docker
     dockerfilePath: ./backend/Dockerfile
-    repo: https://github.com/your-username/your-repo # UPDATE THIS!
+    repo: https://github.com/abhilash0042/pharm-agent
     plan: free
     healthCheckPath: /health
     envVars:
@@ -29,7 +29,7 @@ services:
     env: docker
     dockerfilePath: ./backend/Dockerfile
     dockerCommand: celery -A backend.celery_app worker --loglevel=info
-    repo: https://github.com/your-username/your-repo # UPDATE THIS!
+    repo: https://github.com/abhilash0042/pharm-agent
     plan: free
     envVars:
       - key: DATABASE_URL
