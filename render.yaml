@@ -1,3 +1,25 @@
+envVarGroups:
+  - name: pharm-agent-shared
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: API_KEY
+        value: supersecret
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: WORKER_TOKEN
+        value: workertoken
+      - key: MINIO_ENDPOINT
+        value: ""
+      - key: MINIO_ACCESS_KEY
+        value: ""
+      - key: MINIO_SECRET_KEY
+        value: ""
+
 services:
   - type: web
     name: pharm-agent-api
@@ -6,25 +28,8 @@ services:
     repo: https://github.com/abhilash0042/pharm-agent
     plan: free
     healthCheckPath: /health
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: MINIO_ENDPOINT
-        sync: false
-      - key: MINIO_ACCESS_KEY
-        sync: false
-      - key: MINIO_SECRET_KEY
-        sync: false
-      - key: OPENROUTER_API_KEY
-        sync: false
-      - key: API_KEY
-        value: supersecret
-      - key: REDIS_URL # Ensure celery_app.py uses this
-        sync: false
-      - key: CORS_ORIGINS
-        value: "*"
-      - key: WORKER_TOKEN
-        value: workertoken
+    envVarGroups:
+      - name: pharm-agent-shared
 
   - type: worker
     name: pharm-agent-worker
@@ -33,36 +38,5 @@ services:
     dockerCommand: celery -A backend.celery_app worker --loglevel=info
     repo: https://github.com/abhilash0042/pharm-agent
     plan: free
-    envVars:
-      - key: DATABASE_URL
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: DATABASE_URL
-      - key: MINIO_ENDPOINT
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: MINIO_ENDPOINT
-      - key: MINIO_ACCESS_KEY
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: MINIO_ACCESS_KEY
-      - key: MINIO_SECRET_KEY
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: MINIO_SECRET_KEY
-      - key: REDIS_URL
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: REDIS_URL
-      - key: OPENROUTER_API_KEY
-        fromService:
-          type: web
-          name: pharm-agent-api
-          envVarKey: OPENROUTER_API_KEY
-      - key: WORKER_TOKEN
-        value: workertoken
+    envVarGroups:
+      - name: pharm-agent-shared
