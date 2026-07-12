@@ -9,13 +9,13 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gunicorn
 
 # Copy the backend source code INTO a 'backend' package directory
 # This preserves the 'backend.*' module namespace used throughout the codebase
-COPY . /app/backend/
+COPY backend /app/backend/
 
 # Expose API port
 EXPOSE 8000
